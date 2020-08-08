@@ -9,13 +9,13 @@ typedef uint32_t u_int32_t;
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <sys/types.h>
-#include <sys/stat.h>
 #if defined __APPLE__
 #include <sys/sysctl.h>
 #endif
 #endif
 
 #include <cpuid.h>
+#include <sys/stat.h>
 #include <stdarg.h>
 #include <limits.h>
 
@@ -186,6 +186,16 @@ unsigned long sysutil_get_memtotal(bool ignore_errors)
   }
   return ram;
 
+#elif defined __MINGW32__
+
+  MEMORYSTATUSEX memory_status;
+
+  memory_status.dwLength = sizeof(MEMORYSTATUSEX);
+  if (GlobalMemoryStatusEx(&memory_status))
+    return memory_status.ullTotalPhys;
+  else
+    throw runtime_error("Cannot determine amount of RAM");
+
 #else
 
   struct sysinfo si;
@@ -203,11 +213,7 @@ unsigned long sysutil_get_memtotal(bool ignore_errors)
 
 static void get_cpuid(int32_t out[4], int32_t x)
 {
-#ifdef __MINGW32__
-  __cpuid(out, x);
-#else
   __cpuid_count(x, 0, out[0], out[1], out[2], out[3]);
-#endif
 }
 
 size_t read_id_from_file(const std::string &filename)

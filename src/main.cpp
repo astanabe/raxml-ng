@@ -925,9 +925,9 @@ void autotune_threads(RaxmlInstance& instance)
     if (max_workers > 1)
     {
       auto rank_threads = opts.num_threads > 0 ? opts.num_threads : opts.num_threads_max;
-      auto opt_workers = std::max(rank_threads / res.num_threads_throughput, 1ul);
+      auto opt_workers = std::max<unsigned long>(rank_threads / res.num_threads_throughput, 1ul);
       opt_workers *= num_ranks;
-      opts.num_workers = std::min(opt_workers, max_workers);
+      opts.num_workers = std::min<unsigned long>(opt_workers, max_workers);
 
       while (num_ranks*opts.num_threads % opts.num_workers != 0)
         opts.num_workers--;
@@ -956,7 +956,7 @@ void autotune_threads(RaxmlInstance& instance)
   size_t workers_per_rank = std::max(opts.num_workers / num_ranks, 1u);
   if (opts.num_threads == 0)
   {
-    auto opt_rank_threads = std::max(res.num_threads_response * opts.num_workers / num_ranks, 1lu);
+    auto opt_rank_threads = std::max<unsigned long>(res.num_threads_response * opts.num_workers / num_ranks, 1lu);
     opts.num_threads = opt_rank_threads <= (size_t) opts.num_threads_max ?
         opt_rank_threads : (opts.num_threads_max / workers_per_rank) * workers_per_rank;
 
@@ -2528,7 +2528,7 @@ void init_parallel_buffers(const RaxmlInstance& instance)
 
   // we need 2 doubles for each partition AND threads to perform parallel reduction,
   // so resize the buffer accordingly
-  const size_t reduce_buffer_size = std::max(1024lu, 2 * sizeof(double) *
+  const size_t reduce_buffer_size = std::max<unsigned long>(1024lu, 2 * sizeof(double) *
                                      parted_msa.part_count() * ParallelContext::num_threads());
 
   size_t worker_buf_size = 0;
